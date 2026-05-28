@@ -113,6 +113,11 @@ public class AntibanPlugin extends Plugin {
      */
     private boolean lastMicroBreakActive;
 
+    /**
+     * Tracks the last time the micro-break chance was rolled by the time-based trigger.
+     */
+    private Instant lastMicroBreakRollTime = Instant.MIN;
+
     @Inject
     private OverlayManager overlayManager;
 
@@ -230,6 +235,7 @@ public class AntibanPlugin extends Plugin {
             case LOGGED_IN:
                 if (ready) {
                     ticksSinceLogin = 0;
+                    lastMicroBreakRollTime = Instant.now(); // reset so we don't fire immediately after login
                     ready = false;
                 }
                 break;
@@ -259,6 +265,15 @@ public class AntibanPlugin extends Plugin {
         }
 
         handleMicroBreakIntegration();
+
+        // Time-based micro-break chance roll — fires every ~microBreakCheckIntervalSeconds regardless of XP drops.
+        if (Rs2AntibanSettings.takeMicroBreaks && !Rs2AntibanSettings.microBreakActive
+                && !Rs2AntibanSettings.actionCooldownActive
+                && Duration.between(lastMicroBreakRollTime, Instant.now()).getSeconds()
+                        >= Rs2AntibanSettings.microBreakCheckIntervalSeconds) {
+            lastMicroBreakRollTime = Instant.now();
+            Rs2Antiban.takeMicroBreakByChance();
+        }
 
         if (Rs2Antiban.isMining()) {
             updateLastMiningAction();

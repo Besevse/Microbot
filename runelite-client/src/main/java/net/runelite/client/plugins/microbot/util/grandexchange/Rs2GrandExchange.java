@@ -251,7 +251,10 @@ public class Rs2GrandExchange {
                 if (request.getPercent() != 0) {
                     adjustPriceByPercent(request.getPercent());
                 }
-                if (request.getQuantity() > 0) {
+                // Only touch the quantity button when the pre-filled value doesn't
+                // already match what we want. For stackable items the game fills the
+                // full stack by default, so this is a no-op in that common case.
+                if (request.getQuantity() > 0 && request.getQuantity() != getOfferQuantity()) {
                     if (!setQuantity(request.getQuantity())) {
                         //failed to set quantity
                         return false;
@@ -590,7 +593,17 @@ public class Rs2GrandExchange {
         int tries = 0;
         while (quantity != getOfferQuantity()) {
             Widget quantityButtonX = GrandExchangeWidget.getQuantityButton_X();
-            if (quantityButtonX == null) { log.warn("Quantity button not found"); tries++; continue; }
+            if (quantityButtonX == null) {
+                tries++;
+                log.warn("Quantity button not found (attempt {}/3) — reopening Grand Exchange menu", tries);
+                openExchange();
+                sleepUntil(Rs2GrandExchange::isOpen, 3_000);
+                if (tries > 3) {
+                    log.error("Quantity button still not found after 3 attempts — giving up.");
+                    break;
+                }
+                continue;
+            }
             Microbot.getMouse().click(quantityButtonX.getBounds());
             sleepUntil(() -> Rs2Widget.getWidget(InterfaceID.Chatbox.MES_TEXT2) != null); //GE Enter Price/Quantity
             sleep(600, 1000);
@@ -994,6 +1007,15 @@ public class Rs2GrandExchange {
 
     public static boolean hasSoldOffer() {
         return Arrays.stream(Microbot.getClient().getGrandExchangeOffers()).anyMatch(x -> x.getState() == GrandExchangeOfferState.SOLD);
+    }
+
+    /**
+     * Returns {@code true} if there is at least one GE slot currently in the
+     * {@code SELLING} state (i.e. an offer is active and not yet fully filled).
+     */
+    public static boolean hasActiveSellOffer() {
+        return Arrays.stream(Microbot.getClient().getGrandExchangeOffers())
+                .anyMatch(offer -> offer.getState() == GrandExchangeOfferState.SELLING);
     }
 
     public static boolean hasFinishedSellingOffers() {

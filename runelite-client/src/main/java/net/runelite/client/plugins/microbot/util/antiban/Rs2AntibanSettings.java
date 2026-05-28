@@ -113,6 +113,7 @@ public class Rs2AntibanSettings {
         private Boolean universalAntiban;
         private Integer microBreakDurationLow;
         private Integer microBreakDurationHigh;
+        private Integer microBreakCheckIntervalSeconds;
         private Double actionCooldownChance;
         private Double microBreakChance;
         private Double moveMouseRandomlyChance;
@@ -181,6 +182,7 @@ public class Rs2AntibanSettings {
         settings.universalAntiban = universalAntiban;
         settings.microBreakDurationLow = microBreakDurationLow;
         settings.microBreakDurationHigh = microBreakDurationHigh;
+        settings.microBreakCheckIntervalSeconds = microBreakCheckIntervalSeconds;
         settings.actionCooldownChance = actionCooldownChance;
         settings.microBreakChance = microBreakChance;
         settings.moveMouseRandomlyChance = moveMouseRandomlyChance;
@@ -258,6 +260,9 @@ public class Rs2AntibanSettings {
         if (settings.microBreakDurationHigh != null) {
             microBreakDurationHigh = settings.microBreakDurationHigh;
         }
+        if (settings.microBreakCheckIntervalSeconds != null) {
+            microBreakCheckIntervalSeconds = settings.microBreakCheckIntervalSeconds;
+        }
         if (settings.actionCooldownChance != null) {
             actionCooldownChance = settings.actionCooldownChance;
         }
@@ -298,6 +303,7 @@ public class Rs2AntibanSettings {
     public static boolean universalAntiban = false; // Will attempt to use the same antiban settings for all plugins that has not yet implemented their own antiban settings.
     public static int microBreakDurationLow = AntibanPlugin.MICRO_BREAK_DURATION_LOW_DEFAULT; // 3 minutes
     public static int microBreakDurationHigh = AntibanPlugin.MICRO_BREAK_DURATION_HIGH_DEFAULT; // 15 minutes
+    public static int microBreakCheckIntervalSeconds = 30; // roll microbreak chance every 30 seconds
     public static double actionCooldownChance = 0.1; // 10% chance of activating the action cooldown by default
     public static double microBreakChance = 0.1; // 10% chance of taking a micro break by default
     public static double moveMouseRandomlyChance = 0.1; // 10% chance of moving the mouse randomly by default
@@ -329,6 +335,7 @@ public class Rs2AntibanSettings {
         universalAntiban = false;
         microBreakDurationLow = 3;
         microBreakDurationHigh = 15;
+        microBreakCheckIntervalSeconds = 30;
         actionCooldownChance = 0.1;
         microBreakChance = 0.1;
         moveMouseRandomlyChance = 0.1;

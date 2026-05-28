@@ -15,9 +15,11 @@ public class MicroBreakPanel extends JPanel {
     private final JSlider microBreakDurationLow = new JSlider(1, 10, Rs2AntibanSettings.microBreakDurationLow);
     private final JSlider microBreakDurationHigh = new JSlider(1, 30, Rs2AntibanSettings.microBreakDurationHigh);
     private final JSlider microBreakChance = new JSlider(0, 100, (int) (Rs2AntibanSettings.microBreakChance * 100));
+    private final JSlider microBreakCheckInterval = new JSlider(0, 120, Rs2AntibanSettings.microBreakCheckIntervalSeconds);
     private final JLabel microBreakDurationLowLabel = new JLabel("Micro Break Duration Low (min): " + Rs2AntibanSettings.microBreakDurationLow);
     private final JLabel microBreakDurationHighLabel = new JLabel("Micro Break Duration High (min): " + Rs2AntibanSettings.microBreakDurationHigh);
     private final JLabel microBreakChanceLabel = new JLabel("Micro Break Chance (%): " + (int) (Rs2AntibanSettings.microBreakChance * 100));
+    private final JLabel microBreakCheckIntervalLabel = new JLabel("Micro Break Check Interval (sec): " + Rs2AntibanSettings.microBreakCheckIntervalSeconds);
 
     public MicroBreakPanel() {
 
@@ -26,6 +28,7 @@ public class MicroBreakPanel extends JPanel {
         microBreakDurationLow.setToolTipText("The minimum duration of a micro break");
         microBreakDurationHigh.setToolTipText("The maximum duration of a micro break");
         microBreakChance.setToolTipText("The chance of taking a micro break");
+        microBreakCheckInterval.setToolTipText("How often (in seconds) to roll the micro break chance (independent of XP drops)");
 
         // Set the layout manager for the panel to GridBagLayout
         setLayout(new GridBagLayout());
@@ -33,6 +36,7 @@ public class MicroBreakPanel extends JPanel {
         setupSlider(microBreakDurationLow, 1, 1, 5, 1);
         setupSlider(microBreakDurationHigh, 5, 0, 15, 1);
         setupSlider(microBreakChance, 20, 100, 10);
+        setupSlider(microBreakCheckInterval, 30, 0, 120, 10);
 
         // Create a GridBagConstraints object to define the layout settings for each component
         GridBagConstraints gbc = new GridBagConstraints();
@@ -70,6 +74,23 @@ public class MicroBreakPanel extends JPanel {
         // Add the "Micro Break Chance" slider
         add(microBreakChance, gbc);
 
+        // Separator before timing section
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(8, 5, 2, 5);
+        add(new JSeparator(), gbc);
+
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.insets = new Insets(2, 5, 5, 5);
+        // Add the "Micro Break Check Interval" label
+        add(microBreakCheckIntervalLabel, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        // Add the "Micro Break Check Interval" slider
+        add(microBreakCheckInterval, gbc);
+
+        // Restore default insets for anything added after
+        gbc.insets = new Insets(5, 5, 5, 5);
+
         setupActionListeners();
     }
 
@@ -102,6 +123,13 @@ public class MicroBreakPanel extends JPanel {
                 Rs2AntibanSettings.saveToProfile();
             }
         });
+        microBreakCheckInterval.addChangeListener(e -> {
+            Rs2AntibanSettings.microBreakCheckIntervalSeconds = microBreakCheckInterval.getValue();
+            microBreakCheckIntervalLabel.setText("Micro Break Check Interval (sec): " + microBreakCheckInterval.getValue());
+            if (!microBreakCheckInterval.getValueIsAdjusting()) {
+                Rs2AntibanSettings.saveToProfile();
+            }
+        });
     }
 
     public void updateValues() {
@@ -115,5 +143,7 @@ public class MicroBreakPanel extends JPanel {
         microBreakDurationHighLabel.setText("Micro Break Duration High (min): " + microBreakDurationHigh.getValue());
         microBreakChance.setValue((int) (Rs2AntibanSettings.microBreakChance * 100));
         microBreakChanceLabel.setText("Micro Break Chance (%): " + microBreakChance.getValue());
+        microBreakCheckInterval.setValue(Rs2AntibanSettings.microBreakCheckIntervalSeconds);
+        microBreakCheckIntervalLabel.setText("Micro Break Check Interval (sec): " + microBreakCheckInterval.getValue());
     }
 }
