@@ -44,8 +44,8 @@ public class BookcaseTinderboxScript extends StateMachineScript<BookcaseTinderbo
     /** Door between the bookcase room and the bank. */
     private static final WorldPoint DOOR_LOCATION = new WorldPoint(3088, 3251, 0);
     private static final int DOOR_ID = 1535;
-    /** Maximum distance (tiles) before we walk closer to the door before checking it. */
-    private static final int DOOR_APPROACH_DISTANCE = 6;
+    /** Must be within this many tiles of DOOR_LOCATION before we do any door checks. */
+    private static final int DOOR_APPROACH_DISTANCE = 10;
 
     /** How many tinderboxes to stack on the floor before banking. */
     private static final int TARGET_FLOOR_COUNT = 27;
@@ -266,17 +266,16 @@ public class BookcaseTinderboxScript extends StateMachineScript<BookcaseTinderbo
 
     /**
      * Opens the door between the bookcase room and the bank if it is currently closed.
-     * Walks the player within {@link #DOOR_APPROACH_DISTANCE} tiles first so the door
-     * is in range. Only targets the door at exactly {@link #DOOR_LOCATION}. Waits until
-     * the character has walked to it and the door is fully open before returning.
+     * First guard: player must be within {@link #DOOR_APPROACH_DISTANCE} tiles of
+     * {@link #DOOR_LOCATION}. If not, we walk there and return immediately — the caller
+     * will retry next tick. This prevents matching a random nearby door with the same ID.
      */
     private void openDoorIfNeeded() {
         int distToDoor = Rs2Player.getWorldLocation().distanceTo(DOOR_LOCATION);
         if (distToDoor > DOOR_APPROACH_DISTANCE) {
-            log.info("[Door] {} tile(s) from door — walking closer", distToDoor);
+            log.info("[Door] {} tile(s) from door — walking closer first", distToDoor);
             Rs2Walker.walkTo(DOOR_LOCATION);
-            sleepUntil(() -> Rs2Player.getWorldLocation().distanceTo(DOOR_LOCATION) <= DOOR_APPROACH_DISTANCE,
-                    10_000);
+            return; // retry next tick once we're actually close to the right door
         }
 
         TileObject door = Rs2GameObject.getTileObject(DOOR_ID);
